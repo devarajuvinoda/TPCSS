@@ -1,0 +1,77 @@
+Enable port forwarding in NAT mode in VB setting
+forward guest port 22 to any unused port(>1024) - 49000
+
+sudo apt-get update
+sudo apt-get install openssh-server
+cd /etc/ssh 
+vi sshd_config -> PermitRootLogin yes
+service ssh restart 
+in host: ssh -p <portno> root@localhost
+
+ssh -p 49000 root@localhost
+
+https://www.tenouk.com/Bufferoverflowc/Bufferoverflow1.html
+
+three registers involved during the function call that create the stack frame:
+------------------------------------------------------------------------------
+ESP – Stack Pointer
+The 32-bit register that implicitly used by several processor instructions such as PUSH,POP,CALL and RET.  It always points to the last element, an occupied location on the stack.
+
+EBP – Base Pointer
+Also called Frame Pointer.  The 32 bits register used as an offset to reference all the function parameters and local variables in the current stack frame.  EBP is used explicitly.
+
+EIP – Instruction Pointer
+This 16 bits register holds the address of the next processor instruction to be executed and it’s saved onto the stack as part of the CALL instruction and any jump instructions can modify EIP directly.
+
+Function call and stack:
+------------------------
+ 1.Push parameters on the stack.
+ 2.Call function (push the function return address).
+ 3.(Inside function) Set up stack frame for local variable and buffer storage.
+ 4.Before function returns, adjust stack frame to deallocate local variable storage and buffer.
+ 5.Return (pop the return address) and adjust stack to remove function parameters.
+
+The stack always grows down (from high to low memory addresses).  To access local variables, calculate a negative offset from ebp by subtracting the appropriate value from ebp and parameters with positive offset from ebp starting from [ebp+8].
+
+general form of buffer overflow attack actually tries to achieve the following two goals:
+-----------------------------------------------------------------------------------------
+ 1.Injecting the attack codes (hard coded the input in programs, user input from command line or network strings/input redirection via socket – remote exploits or other advanced methods).
+ 2.Change the execution path of the running process to execute the attack code (by overwriting the return address).
+
+
+movl $0x3c0633d2, %eax
+movl %eax, $0x804b100
+ret
+.align 4
+
+
+00000000 <.text>:
+   0:   b8 d2 33 06 3c          mov    $0x3c0633d2,%eax
+   5:   a3 00 b1 04 08          mov    %eax,0x804b100
+   a:   c3                      ret
+   b:   90                      nop
+~         
+
+\xb8\xd2\x33\x06\x3c\xa3\x00\xb1\x04\x08\xc3\x90
+         
+
+movl $0x3c0633d2, %eax
+ret
+.align 4
+
+
+00000000 <.text>:
+   0:   b8 d2 33 06 3c          mov    $0x3c0633d2,%eax
+   5:   c3                      ret
+   6:   66 90                   xchg   %ax,%ax
+~                                                
+
+
+\xb8\xd2\x33\x06\x3c\xc3\x66\x90
+                                               
+
+
+wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=16NtLqZfRD3K-7-IZ5i0T915rha-dyu23' -O traces1.pcap
+
+
+https://drive.google.com/file/d/16NtLqZfRD3K-7-IZ5i0T915rha-dyu23/view?usp=sharing
